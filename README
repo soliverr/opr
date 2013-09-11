@@ -1,0 +1,257 @@
+The OPR is a UNIX command line tool that allows you to remove hardcoded Oracle
+passwords from your UNIX scripts. For example, consider the following script:
+
+  #!/bin/sh
+  sqlplus -s /NOLOG << EOF
+  connect system/manager@testdb
+  exec dbms_utility.analyze_database('COMPUTE');
+  EOF
+  
+This script runs the analyze database procedure as user system on the testdb. 
+The problem is that the password is hardcoded into this script. That makes it
+difficult to change that password on the database, because all scripts
+that contain that password must be modified as well.
+
+The OPR provides the following solution to this problem:
+
+  #!/bin/sh
+  sqlplus -s /NOLOG << EOF
+  connect system/`opr -r testdb system`@testdb
+  exec dbms_utility.analyze_database('COMPUTE');
+  EOF
+
+In other words, the command "opr -r testdb system" returns the password for the
+schema 'system' on the 'testdb' database to the stdout.
+
+The opr uses a 'repository' (file) to maintain the password data. The opr 
+supports different switches to operate on this password data. Any change
+to the opr password data will be synced with the database. Changing a password 
+through the opr implies changing that password on the database too. Adding a 
+password will only succeed when that password is valid on the database. The -x 
+flag checks all passwords by attempting a logon, showing you possible 
+inconsistencies. 
+Note that changing the password on the database that is also stored in opr is a
+bad idea, in that case it will not be synced with the opr. Use the opr to change
+passwords that are part of the opr.
+
+SETUP :
+=======
+
+The opr uses a file to store its data. This file is called the repository, and 
+this repository must be owned by a Unix user. It is advised that you create a 
+dedicated Unix account for this purpose, and that you restrict access to this
+account, because the repository contains oracle user/password combinations. 
+Although these passwords are encrypted, this encryption is weak and merely 
+intended to elude the prowling eye.
+In the examples below, we assume you created a Unix user called 'opr'.
+
+The repository location is specified by the OPRREPOS environment variable, for 
+example:
+
+    opr> OPRREPOS=/opt/opr/data/repos.opr;export OPRREPOS
+    opr>
+
+Each time the opr is invoked, this environment variable is inspected, and the 
+opr operates on that repository file. If this variable is not set, the opr will
+report an error. If it is set to an invalid file, that will be detected.
+
+Before a repository can be used, it must be created. You are free to choose
+a location for the repository file.
+
+    opr> export OPRREPOS=/opt/opr/data/repos.opr
+    opr> opr -c
+    repository /opt/opr/data/repos.opr created.
+    opr>
+
+The fact that the Unix user 'opr' has created this repository is stored in the 
+repository. When the privileged switches are attempted, the executable checks 
+that the invoking user is indeed named 'opr'.
+
+The repository is created with the following access rights:
+
+    opr> ls -l $OPRREPOS
+    -rw-------   1 opr users 964 Oct  5 01:42 /opt/opr/data/repos.opr
+    opr>
+
+Thus only the UNIX user opr is allowed to read and write the repository.
+This is the pivotal part of the security provided by the opr.
+
+The opr can be configured such that multiple UNIX users can use the OPR to read
+certain oracle passwords. The repository owner controls which UNIX user is 
+allowed to read which password. To this end, the repository contains records 
+with the fields 
+
+    database   - name of the database
+    schemaname - name of the database username (schemaname)
+    osusername - name of the UNIX user allowed to read this record
+    password   - encrypted oracle password for this schemaname@database
+
+Thus the right to read a password can be granted and revoked for individual
+UNIX users.
+
+For example, suppose whe have a UNIX user called 'batch' who needs to read
+the password for the appl@testdb schema. In that case, we tell the opr:
+
+    opr> opr -a testdb appl batch
+    enter the password :
+    re-enter the password :
+    entry ( testdb, appl, batch ) added.
+    opr>
+
+In other words, we specifically grant the right to read the password for
+the appl@testdb schema to the UNIX user batch.
+
+To enable the UNIX user batch to read the repository file (its -rw------ owned
+by opr remember), we need a setuid bit on the opr executable:
+
+    opr> chmod 511 opr
+    opr> ls -l opr
+    -r-x--x--x   1 opr     users            69632 Oct  5 02:32 opr
+    oracle> chmod u+s opr
+    oracle> ls -l opr
+    -r-s--x--x   1 opr     users            69632 Oct  5 02:32 opr
+
+Thus, everybody is allowed to execute opr, and when invoked,
+the opr runs under the effective uid opr. This allows that opr instance to 
+access the repository file. Note that although anybody can execute the opr, 
+nobody can read anything without being granted that right by the repository 
+owner. 
+
+When invoked, the opr does a system call to get the UNIX login name of the user
+invoking the opr (it's a call that cannot be fooled). That name is compared
+to the osusername field in repository to evaluate the access rights on that
+record.
+
+Following the above setup, you can:
+
+    opr> opr -a testdb appl batch
+    enter the password :
+    re-enter the password :
+    entry ( testdb, appl, batch ) added.
+    opr>
+
+    batch> opr -r testdb appl
+    secretbatch>
+
+but:
+
+    root> opr -r testdb appl
+    sorry :(root>   
+
+COMMAND LINE OPTIONS :
+======================
+
+Create the repository : opr -c
+------------------------------
+
+This switch creates the repository. The OPRREPOS environment variable is read
+to determine the name of the file. An error is reported if the repository file
+cannot be created, or when it already exists; an existing repository is
+not overwritten by the opr. The file is created with permissions -rw------.
+
+Note that you cannot accidentially destroy or overwrite anything with this 
+switch.
+
+List the contents of the repository : opr -l
+--------------------------------------------
+
+This switch lists the contents of the repository. If invoked by the repository
+owner, this lists all entries in the repository. If invoked by another UNIX
+user, only the records granted to that user are listed. Note that the password
+is not displayed. If logging is enabled, the location of the logfile is
+displayed if invoked by the repository owner.
+
+Add a record to the repository: opr -a (-f) <database> <schemaname> <osuser>
+----------------------------------------------------------------------------
+
+This switch adds a record to the repository. Only the repository owner is
+allowed to do this. If the combination <database> <schemaname> is new to the
+repository, you are prompted to enter the password. The existing password is
+assigned to this new record otherwise. Note that the opr actually connects to
+the database to validate the password. If that fails, the entry is not added.
+To forcibly add the record, use the -f flag.
+
+Read a password from the repository: opr -r <database> <schemaname>
+-------------------------------------------------------------------
+
+This switch reads the password for the <database> <schemaname> and echoes it
+to the stdout if and only if the invoker has that right. The opr looks at the 
+login name of the osuser that invoked the opr, and checks if that user is
+granted access to the password. If this switch is used, but the osuser is
+not allowed to read, the string "sorry :(" is returned to the stdout. 
+
+Modify a password in the repository: opr -m <database> <schemaname>
+-------------------------------------------------------------------
+
+This switch allows you to modify a password in the repository. Note that
+all entries in the repository matching the <database> <schemaname> are 
+modified. Only the repository owner is allowed to use this switch. Note that
+the password is changed on the database too, the opr logs on using the
+old password to change it into the new. If this fails, the entries are not
+modified.
+
+Delete a record from the repository: opr -d <database> <schemaname> <osuser>
+----------------------------------------------------------------------------
+
+This switch deletes a record from the repository, it revokes the right for
+the <osuser> to read the password for <database> <schemaname>. Only the 
+repository owner is allowed to use this switch.
+
+Enable logging : opr +g <logfile>
+---------------------------------
+
+This switch enables logging of some opr events to a logfile. Only the 
+repository owner is allowed to do this. The events logged are:
+
+  + security violations (attempt to read but no right to do so)
+  + succesfull requests
+  
+Note that this switchs appends to the <logfile> if it already exists.  
+
+Disable logging : opr -g
+------------------------
+
+Disables logging. The logfile is left intact.
+
+Export repository : opr -e <filename>
+-------------------------------------
+
+Creates an 'export' of the repository. This functionality might be necessary 
+when upgrading the opr to a higher version, when the repository file format has 
+changed. You can also use the export to transfer data from one repository to
+another. Note that the passwords in the export file are encrypted. The export
+file is created -rw------. Only the repository owner is allowed to use this 
+switch.
+
+Import repository : opr -i <filename>
+-------------------------------------
+
+Imports a previously exported repository. Only the repository owner is allowed
+to do this.
+
+Crosscheck repository and databases : opr -x
+--------------------------------------------
+
+This switch checks all distinct schema@database combinations for password 
+validity. Use it to check if the data in the repository matches with the
+databases. It is probably a good idea to runs this from the cron in production
+environments, so that possible mismatches are detected quickly.
+You can also perform a crosscheck for a specific database only by issuing
+opr -x <database>.
+
+INSTALLATION :
+==============
+
+See INSTALL file.
+
+REPORTING BUGS :
+================
+
+If you do find a bug, please report it through the opr project homepage on
+http://sourceforge.net/projects/opr
+
+- include a description on how to reproduce the bug.
+- include the OS version and hardware architecture of your platform.
+- include the vendor, name and version of the compiler you used to generate 
+  the executable.
+

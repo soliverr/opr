@@ -1,0 +1,112 @@
+03-07-2000 1.0.0 J.M. Spit <jmspit@euronet.nl>
+  * idea implemented into this source code.
+
+28-07-2000 1.0.1 J.M. Spit <jmspit@euronet.nl>
+  * changed function prototypes so that they are compatible with ANSI C.
+  * changed the findEntry function, it does a binary search on the sorted
+    list now.
+
+26-09-2000 1.0.2 J.M. Spit <jmspit@euronet.nl>
+  * added code to supress character echo while typing passwords.
+  * added logging facilities.
+  * added export/import functionality.
+  * added crosscheck functionality.
+26-09-2000 1.0.2 J. Spit   <j.spit@uptime.nl>
+  * added code to supress character echo while typing passwords.
+  * added a call to chmod to force the access rights -rw------- on the
+    repository file.
+
+02-10-2000 1.0.3 J.M.Spit  <jmspit@euronet.nl>
+  * the repository file is now platform independent, it stores only 
+    string values.
+  * changed behaviour of -a option, -a does not ask the password if
+    that password is already in the repository.
+  * added 'encryption' to the repository. import / export use encrypted
+    passwords as well.
+    
+04-10-2000 1.0.4 J.M.Spit  <jmspit@euronet.nl>
+  * changed behaviour of opr -l, now lists everything for the repository owner,
+    and lists only the granted entries for other UNIX users.
+  * changed -x option, only one entry per <database> <schemaname> is generated
+04-10-2000 1.0.4 J. Spit   <j.spit@uptime.nl>
+  * removed call to ltoa, replaced with sprintf.
+  
+06-10-2000 1.0.5 J.M.Spit <jmspit@euronet.nl>
+  * removed bug from export / import functions. Could go wrong when the 
+    encrypted password contains a whitespace character.
+  * removed encryption bug  
+  * changed all io on the repository to use fgetc / fputc to avoid 
+    possible platform/compiler specific aligning within structures affecting
+    the layout of the repository file.
+
+26-10-2000 1.1.0 J.M.Spit <jmspit@euronet.nl>
+  * added OCI code, change, verify and crosscheck passwords on 
+    database.
+
+12-01-2001 1.1.1 J.M.Spit <jmspit@euronet.nl>
+  * due to a SUNOS specific bug (Sun calls it a feature), we had to split the
+    opr into HPUX and SunOS specific distributions. For HPUX, nothing changed 
+    but the version number in 1.1.1.
+
+04-06-2004 1.1.4 J.Spit <j.spit@uptime.nl>
+  * now works with 64 bit Oracle installations (will try 32 bit lib first, then
+    the 64 bit lib)
+  * database name is automatically converted to uppercase, schema & osuser to
+    lowercase.
+
+15-07-2004 1.1.5 J.Spit <j.spit@uptime.nl>
+  * ability to add SYS passwords to OPR.
+
+08-05-2005 1.1.6 J.M.Spit <jmspit@euronet.nl>
+  * improved the documentation.
+  * changed cosmetics of output.
+  * improved database check and change functions; obtained handles are
+    explicitly freed, connected session is explicitly disconnected.
+  * added call to dlclose matching the dlopen on SOLARIS
+  * changed all calls to strcmp to strncmp (assuming all unices support it 
+    by now)
+
+15-06-2005 1.1.7 J.Spit <j.spit@uptime.nl>
+  * Oracle client libraries are now dynamicly opened/closed only for those 
+    operations that require them. This goes for all platforms. This means you 
+    can use OPR on systems without an Oracle installation to e.g. list, retrieve
+    and delete passwords from the repository. 
+  * added -f flag to forcibly add a password entry without verification on the
+    database.
+  * bugfix: ocisessionend function was not initialized.
+  * bugfix: when retrieving a password, schemaname was case sensitive.
+  * currently database is converted to uppercase, and schemaname to lowercase. 
+    OSuser is left untouched.
+  * raised max. repository entries from 1024 to 4096
+  * minor cosmetic changes
+17-06-2005 1.1.7 J.M.Spit <jmspit@euronet.nl>
+  * Removed possible buffer overflow in askPassword.
+  
+29-06-2005 1.1.8 J.M.Spit <jmspit@euronet.nl>
+  * the dlopen scheme based on the ORACLE_HOME environment var was vulnerable to
+    a malicious libclnstsh.so attack. opr now only loads a libclntsh.so lib that
+    is located in the default (*:) ORACLE_HOME/lib32 or ORACLE_HOME/lib listed 
+    in the machine's oratab.
+    
+30-11-2005 1.1.9 J.M.Spit <jmspit@euronet.nl>
+  * The INSTALL file informed that you need to be able to see the oracle oci 
+    libraries, but it fact you need these only at runtime. You do need access
+    to the OCI headers files during runtime though. But these rights are enabled
+    by default oracle installations.
+  * opr now uses libltdl, a dynamic loading abstraction, to tackle compiling
+    issues on (for example) hp-ux.
+  * added file locking on the repository file.
+  * fixed 2 strncat invocation bugs.
+
+20-03-2006 1.1.10 J.M.Spit <jmspit@euronet.nl>
+  * switched from lockf to fcntl file locking calls for better platform 
+    independence.
+
+26-07-2006 1.1.11 J.M.Spit <jmspit@euronet.nl>
+  * minimal change to prevent compile error with older versions of gcc
+
+14-05-2013 1.1.12 J.M.Spit <jmspit@euronet.nl>
+  * added checks for inclusion of librt (or posix4) on Solaris for nanosleep
+  * updated autoconf to recognize modern linux systems
+  * fixed autoconf issues with libtdl
+

@@ -1,0 +1,4 @@
+* change random function, force the algorithm being OS independent by supplying 
+  one ourselves
+
+* allow for different logging levels? (only errors or errors and success)
