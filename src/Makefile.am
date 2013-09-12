@@ -1,5 +1,5 @@
 INCLUDES = @INCLTDL@
-bin_PROGRAMS = opr
+sbin_PROGRAMS = opr
 opr_SOURCES = opr.c oprora.c oprora.h
 opr_LDADD = @LIBLTDL@
 man_MANS = opr.8

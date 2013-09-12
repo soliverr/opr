@@ -66,5 +66,27 @@ if test "$found" = ""; then
 fi
 AC_MSG_RESULT([yes])
 
-AC_CONFIG_FILES([Makefile src/Makefile])
+dnl Default location of password repository: --with-oprreposdir
+oprreposdir='/etc/'
+AC_MSG_CHECKING(oprreposdir)
+AC_ARG_WITH(oprreposdir,
+[  --with-oprreposdir=DIR  Directory for OPR repository file [[/etc]] ],
+[ case "$withval" in
+    no)
+        AC_MSG_ERROR(Need oprreposdir)
+	;;
+    yes)
+	;;
+    [[\\/$]]* | ?:[[\\/]]* )
+        oprreposdir="${withval}/"
+        ;;
+    *)
+        AC_MSG_ERROR([expected an absolute directory name for --with-oprreposdir: $withval])
+        ;;
+  esac ]
+)
+AC_SUBST(oprreposdir)
+AC_MSG_RESULT($oprreposdir)
+
+AC_CONFIG_FILES([Makefile src/Makefile src/oprdefs.h])
 AC_OUTPUT

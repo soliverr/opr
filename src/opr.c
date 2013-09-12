@@ -33,6 +33,7 @@
   #include "config.h"
 #endif
 #include "oprora.h"
+#include "oprdefs.h"
 
 /*
  * START CONFIGURABLE SECTION
@@ -773,8 +774,9 @@ void getEnvironment()
   if ( r )
     strncpy( reposname, r, sizeof(reposname) );
   else {
-    fprintf( stderr, "environment variable '%s' not set.\n", OPRREPOS );
-    exit( -1 );
+    /* Set default repository */
+    strncpy( reposname, DEFAULT_OPRREPOSDIR, sizeof(reposname) );
+    strncat( reposname, DEFAULT_OPRREPOSFILE, sizeof(reposname)-strlen(reposname)-1 );
   }
 }
 
