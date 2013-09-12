@@ -1,0 +1,48 @@
+.TH ORACLE "8" "May 2010" "Oracle Password Repository 1.1.10" "User Commands"
+.SH NAME
+\fBopr\fR \- Oracle Password Repository 1.1.10
+.SH SYNOPSIS
+.HP
+\fBopr\fR \fI\-c\fR
+create repository
+.HP
+\fBopr\fR \fI\-l\fR
+list contents of repository
+.HP
+\fBopr\fR \fI\-a\fR [\fI\-f\fR] <database> <schemaname> <osuser>
+add (grant) password
+.HP
+\fBopr \fI\-r\fR <database> <schemaname>
+read password
+.SH DESCRIPTION
+Oracle Password Repository 1.1.10
+GNU GPL by Uptime Automatisering B.V.
+http://sourceforge.net/projects/opr
+.PP
+usage:
+.br
+\- create repository                    : opr \fB\-c\fR
+.PP
+\- list contents of repository          : opr \fB\-l\fR
+.PP
+\- add (grant) password                 : opr \fB\-a\fR (\fB\-f\fR) <database> <schemaname> <osuser>
+.IP
+(\fB\-f\fR forces entry addition without database verification)
+.PP
+\- read password                        : opr \fB\-r\fR <database> <schemaname>
+.PP
+\- modify password                      : opr \fB\-m\fR <database> <schemaname>
+.PP
+\- delete (revoke) password             : opr \fB\-d\fR <database> <schemaname> <osuser>
+.PP
+\- enable logging                       : opr +g <logfile>
+.PP
+\- disable logging                      : opr \fB\-g\fR
+.PP
+\- crosscheck repository with all dbs   : opr \fB\-x\fR
+.PP
+\- crosscheck repository with single db : opr \fB\-x\fR <database>
+.PP
+\- export repository to file            : opr \fB\-e\fR <filename>
+.PP
+\- import repository from file          : opr \fB\-i\fR <filename>
