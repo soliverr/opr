@@ -27,6 +27,7 @@
 #endif
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <dlfcn.h>
 /* cross platform dynamic library abstraction */
@@ -40,6 +41,9 @@
 #define ORA_LIBCLIENT32 "/lib32/libclntsh.so"
 #define ORA_LIBCLIENT "/lib/libclntsh.so"
 #define MAX_LIB_PATH 1024
+
+/* name of the environment variable */
+#define ORACLE_HOME "ORACLE_HOME"
 
 /* handle to the oci client library */
 lt_dlhandle libclntsh_so;
@@ -73,57 +77,67 @@ void loadOraLibs()
 
     char libpath32[MAX_LIB_PATH];
     char libpath[MAX_LIB_PATH];
-    char oratab_entry[MAX_LIB_PATH];  
+    char oratab_entry[MAX_LIB_PATH];
     FILE *oratab;
+    char *r;
     int found = 0;
-    int i;    
+    int i;
     
     //init ltdl
     if ( lt_dlinit() )
     {
-      fprintf( stderr, "error initializing libltdl: %s", lt_dlerror() );         
-      exit(-1);      
+      fprintf( stderr, "error initializing libltdl: %s", lt_dlerror() );
+      exit(-1);
     }
     
-    //open oratab to get ORACLE_HOME
-    
-    if ( ! ( oratab = fopen( "/var/opt/oracle/oratab", "r" ) ) ) 
-      oratab = fopen( "/etc/oratab", "r" );
-    if ( ! oratab ) 
-    { 
-      fprintf( stderr, "unable to open the oratab\n" );      
+    //get ORACLE_HOME environment variable
+    r = getenv( ORACLE_HOME );
+    if ( r )
+    {
+      found = 1;
+      strncpy( libpath, r, MAX_LIB_PATH );
+    } else
+    {
+     //open oratab to get ORACLE_HOME
+     if ( ! ( oratab = fopen( "/var/opt/oracle/oratab", "r" ) ) )
+       oratab = fopen( "/etc/oratab", "r" );
+     if ( ! oratab )
+     {
+       fprintf( stderr, "unable to open the oratab\n" );
+       exit(-1);
+     } else
+     {
+       while( fgets( oratab_entry, MAX_LIB_PATH, oratab ) )
+       {
+         if ( strncmp( oratab_entry, "*:", 2 ) == 0 )
+         {
+           found = 1;
+           for( i = 2; i < MAX_LIB_PATH; i++ )
+           {
+             if ( oratab_entry[i] == ':' ) 
+             {
+               libpath[i-2] = 0;
+               break;
+             }
+             libpath[i-2] = oratab_entry[i];
+             if ( oratab_entry[i] == 0 ) break;
+           }
+           break;
+         }
+       }
+       fclose( oratab );
+     }
+    }
+
+    if ( ! found )
+    {
+      fprintf( stderr, "no default (*:) entry found in the oratab\n" );         
       exit(-1);
     } else
     {
-      while( fgets( oratab_entry, MAX_LIB_PATH, oratab ) )
-      {      
-        if ( strncmp( oratab_entry, "*:", 2 ) == 0 )
-        {
-          found = 1;          
-          for( i = 2; i < MAX_LIB_PATH; i++ )
-          {
-            if ( oratab_entry[i] == ':' ) 
-            {
-              libpath[i-2] = 0;
-              break;
-            }
-            libpath[i-2] = oratab_entry[i];
-            if ( oratab_entry[i] == 0 ) break;          
-          }
-          break;
-        }
-      }
-      fclose( oratab );
-      if ( ! found ) 
-      {
-        fprintf( stderr, "no default (*:) entry found in the oratab\n" );         
-        exit(-1);
-      } else
-      {
-        strncpy( libpath32, libpath, MAX_LIB_PATH );
-        strncat( libpath, ORA_LIBCLIENT, MAX_LIB_PATH - strlen( libpath ) - 1 );
-        strncat( libpath32, ORA_LIBCLIENT32, MAX_LIB_PATH - strlen( libpath32 ) - 1 );
-      }   
+      strncpy( libpath32, libpath, MAX_LIB_PATH );
+      strncat( libpath, ORA_LIBCLIENT, MAX_LIB_PATH - strlen( libpath ) - 1 );
+      strncat( libpath32, ORA_LIBCLIENT32, MAX_LIB_PATH - strlen( libpath32 ) - 1 );
     }
     
     //load libclntsh.so library and get function pointers

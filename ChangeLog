@@ -105,8 +105,14 @@
 26-07-2006 1.1.11 J.M.Spit <jmspit@euronet.nl>
   * minimal change to prevent compile error with older versions of gcc
 
+24-02-2009 1.1.11-1 Sergey Kryazhevskikh <soliverr@gmail.com>
+  * check ORACLE_HOME before read oratab.
+  * set default location for password repository: ./configure --with-oprreposdir=<path>.
+
 14-05-2013 1.1.12 J.M.Spit <jmspit@euronet.nl>
   * added checks for inclusion of librt (or posix4) on Solaris for nanosleep
   * updated autoconf to recognize modern linux systems
   * fixed autoconf issues with libtdl
 
+12-09-2013 1.1.12-1 Sergey Kryazhevskikh <soliverr@gmail.com>
+  * Incorporate changes from 1.1.11-1 to 1.1.12.
