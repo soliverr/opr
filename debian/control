@@ -1,0 +1,20 @@
+Source: opr
+Section: misc
+Priority: required
+Maintainer: Kryazhevskikh Sergey <soliverr@gmail.com>
+Build-Depends: debhelper (>= 5), oracle-client | oracle-server | oracle-xe | oracle-xe-universal
+Standards-Version: 3.7.2
+
+Package: opr
+Architecture: amd64
+Depends: ${shlibs:Depends}, oracle-client | oracle-server | oracle-xe | oracle-xe-universal
+Description: Oracle Password Repository.
+ The OPR is a UNIX command line tool that allows you to remove hardcoded Oracle
+ passwords from your UNIX scripts. For example, consider the following script:
+ .
+   #!/bin/sh
+   sqlplus -s /NOLOG << EOF
+   connect system/manager@testdb
+   exec dbms_utility.analyze_database('COMPUTE');
+   EOF
+ .
