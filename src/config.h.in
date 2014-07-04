@@ -1,7 +1,4 @@
 /* src/config.h.in.  Generated from configure.in by autoheader.  */
-/* Are we running on the not-so-compatible-with-most-unices Solaris ? */
-#undef SOLARIS
-
 
 /* Define to 1 if you have the `argz_add' function. */
 #undef HAVE_ARGZ_ADD
@@ -161,6 +158,9 @@
 /* Define to the sub-directory in which libtool stores uninstalled libraries.
    */
 #undef LT_OBJDIR
+
+/* Define to the shared library suffix, say, ".dylib". */
+#undef LT_SHARED_EXT
 
 /* Define if dlsym() requires a leading underscore in symbol names. */
 #undef NEED_USCORE

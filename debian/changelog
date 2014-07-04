@@ -1,32 +1,32 @@
 opr (1.1-11.5) stable; urgency=low
 
- * Fixed package dependencies;
- * Added simple man-page.
+  * Fixed package dependencies;
+  * Added simple man-page.
 
  -- Kryazhevskikh Sergey <soliverr@gmail.com>  Tue, 04 May 2010 18:33:33 +0600
 
 opr (1.1-11.4) stable; urgency=low
 
- * Ignore install error if password repository file already exists.
+  * Ignore install error if password repository file already exists.
 
  -- Kryazhevskikh Sergey <soliverr@gmail.com>  Wed, 08 Apr 2009 11:12:21 +0500
 
 opr (1.1-11.3) stable; urgency=low
 
- * Create password repository on package install;
- * Fixed error with libpath.
+  * Create password repository on package install;
+  * Fixed error with libpath.
 
  -- Kryazhevskikh Sergey <soliverr@gmail.com>  Wed, 25 Feb 2009 17:41:21 +0500
 
 opr (1.1-11.2) stable; urgency=low
 
- * Get ORACLE_HOME environment variable before read oratab file.
+  * Get ORACLE_HOME environment variable before read oratab file.
 
  -- Kryazhevskikh Sergey <soliverr@gmail.com>  Thu, 24 Feb 2009 10:01:05 +0500
 
 opr (1.1-11.1) stable; urgency=low
 
- * Initial package build from sources 1.1-11;
- * Added default location for password repository.
+  * Initial package build from sources 1.1-11;
+  * Added default location for password repository.
 
  -- Kryazhevskikh Sergey <soliverr@gmail.com>  Wed, 04 Feb 2009 14:51:55 +0500

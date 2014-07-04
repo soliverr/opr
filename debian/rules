@@ -35,7 +35,6 @@ configure: configure-stamp
 	            --with-docdir=$(package_doc) \
 	            --with-system-libtool \
 	            --disable-ltdl-install \
-	            --with-ltdl-include=/usr/include \
 	            --with-oprreposdir=$(opr_repos_dir)
 
 configure-stamp:
